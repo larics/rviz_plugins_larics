@@ -31,16 +31,11 @@
 #include <nav_msgs/Path.h>
 #include "rviz/message_filter_display.h"
 
-namespace Ogre
-{
-    class ManualObject;
-}
 
 namespace rviz
 {
-    class ColorProperty;
-    class FloatProperty;
     class IntProperty;
+    class PointCloudCommon;
 
     /**
      * \class PathDisplay
@@ -54,18 +49,16 @@ namespace rviz
         virtual ~ThickPathDisplay();
         /** @brief Overridden from Display. */
         virtual void reset();
+        virtual void update( float wall_dt, float ros_dt );
+    private Q_SLOTS:
+        void updateQueueSize();
     protected:
         /** @brief Overridden from Display. */
         virtual void onInitialize();
         /** @brief Overridden from MessageFilterDisplay. */
         void processMessage( const nav_msgs::Path::ConstPtr& msg );
-        private Q_SLOTS:
-        void updateBufferLength();
-    private:
-        void destroyObjects();
-        std::vector<Ogre::ManualObject*> manual_objects_;
-        ColorProperty* color_property_;
-        FloatProperty* alpha_property_;
+        PointCloudCommon* point_cloud_common_;
+
         IntProperty* buffer_length_property_;
 };
 

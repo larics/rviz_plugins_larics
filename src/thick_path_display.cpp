@@ -34,6 +34,7 @@
 #include <OgreBillboardSet.h>
 #include <OgreMatrix4.h>
 #include <tf/transform_listener.h>
+#include "rviz/default_plugin/point_cloud_common.h"
 #include "rviz/display_context.h"
 #include "rviz/frame_manager.h"
 #include "rviz/properties/color_property.h"
@@ -41,110 +42,74 @@
 #include "rviz/properties/int_property.h"
 #include "rviz/validate_floats.h"
 #include "thick_path_display.h"
+#include "geometry_msgs/PoseStamped.h"
 
 
 namespace rviz 
 {
 
-ThickPathDisplay::ThickPathDisplay()
+ThickPathDisplay::ThickPathDisplay() : point_cloud_common_( new PointCloudCommon(this))
 {
-    color_property_ = new ColorProperty( "Color", QColor( 25, 255, 0 ),
-                                         "Color to draw the path.", this );
-    alpha_property_ = new FloatProperty( "Alpha", 1.0,
-                                         "Amount of transparency to apply to the path.", this );
+
     buffer_length_property_ = new IntProperty( "Buffer Length", 1,
                                                "Number of paths to display.",
-                                               this, SLOT( updateBufferLength() ));
+                                               this, SLOT( updateQueueSize()));
     buffer_length_property_->setMin( 1 );
+    update_nh_.setCallbackQueue(point_cloud_common_->getCallbackQueue());
 }
 
 ThickPathDisplay::~ThickPathDisplay()
 {
-destroyObjects();
+    delete point_cloud_common_;
 }
 
 void ThickPathDisplay::onInitialize()
 {
-MFDClass::onInitialize();
-updateBufferLength();
+    MFDClass::onInitialize();
+    point_cloud_common_->initialize(context_, scene_node_);
 }
 
-void ThickPathDisplay::reset()
-{
-MFDClass::reset();
-updateBufferLength();
-}
 
-void ThickPathDisplay::destroyObjects()
+void ThickPathDisplay::updateQueueSize()
 {
-for( size_t i = 0; i < manual_objects_.size(); i++ )
-{
-Ogre::ManualObject* manual_object = manual_objects_[ i ];
-if( manual_object )
-{
-manual_object->clear();
-scene_manager_->destroyManualObject( manual_object );
-}
-}
-}
-
-void ThickPathDisplay::updateBufferLength()
-{
-destroyObjects();
-int buffer_length = buffer_length_property_->getInt();
-QColor color = color_property_->getColor();
-manual_objects_.resize( buffer_length );
-for( size_t i = 0; i < manual_objects_.size(); i++ )
-{
-Ogre::ManualObject* manual_object = scene_manager_->createManualObject();
-manual_object->setDynamic( true );
-scene_node_->attachObject( manual_object );
-manual_objects_[ i ] = manual_object;
-}
+    tf_filter_->setQueueSize((uint32_t) buffer_length_property_->getInt());
 }
 
 bool validateFloats( const nav_msgs::Path& msg )
 {
-bool valid = true;
-valid = valid && validateFloats( msg.poses );
-return valid;
+	bool valid = true;
+	valid = valid && validateFloats( msg.poses );
+	return valid;
 }
 
 void ThickPathDisplay::processMessage( const nav_msgs::Path::ConstPtr& msg )
 {
-Ogre::ManualObject* manual_object = manual_objects_[ messages_received_ % buffer_length_property_->getInt() ];
-manual_object->clear();
-if( !validateFloats( *msg ))
-{
-setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
-return;
+    if( !validateFloats( *msg ))
+	{
+		setStatus( StatusProperty::Error, "Topic", "Message contained invalid floating point values (nans or infs)" );
+		return;
+	}
+
+    sensor_msgs::PointCloudPtr cloud(new sensor_msgs::PointCloud);
+    cloud->header = msg->header;
+    cloud->points.resize(msg->poses.size());
+
+    for(int i=0; i<msg->poses.size(); i++) {
+        cloud->points[i].x = msg->poses[i].pose.position.x;
+        cloud->points[i].y = msg->poses[i].pose.position.y;
+        cloud->points[i].z = msg->poses[i].pose.position.z;
+    }
+    point_cloud_common_->addMessage(cloud);
 }
 
-Ogre::Vector3 position;
-Ogre::Quaternion orientation;
-
-if( !context_->getFrameManager()->getTransform( msg->header, position, orientation ))
-{
-ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'", msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+void ThickPathDisplay::update(float wall_dt, float ros_dt) {
+    point_cloud_common_->update(wall_dt, ros_dt);
 }
 
-Ogre::Matrix4 transform( orientation );
-transform.setTrans( position );
-// scene_node_->setPosition( position );
-// scene_node_->setOrientation( orientation );
-Ogre::ColourValue color = color_property_->getOgreColor();
-color.a = alpha_property_->getFloat();
-uint32_t num_points = msg->poses.size();
-manual_object->estimateVertexCount( num_points );
-manual_object->begin( "BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP );
-for( uint32_t i=0; i < num_points; ++i)
+void ThickPathDisplay::reset()
 {
-const geometry_msgs::Point& pos = msg->poses[ i ].pose.position;
-Ogre::Vector3 xpos = transform * Ogre::Vector3( pos.x, pos.y, pos.z );
-manual_object->position( xpos.x, xpos.y, xpos.z );
-manual_object->colour( color );
-}
-manual_object->end();
+    MFDClass::reset();
+    point_cloud_common_->reset();
 }
 
 } // namespace rviz
