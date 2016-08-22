@@ -1,9 +1,9 @@
 ## BEGIN_TUTORIAL
-## This CMakeLists.txt file for rviz_plugins_dm builds both the ThickPath plugin.
+## This CMakeLists.txt file for rviz_plugins_larics builds both the ThickPath plugin.
 ##
 ## First start with some standard catkin stuff.
 cmake_minimum_required(VERSION 2.8.3)
-project(rviz_plugins_dm)
+project(rviz_plugins_larics)
 find_package(catkin REQUIRED COMPONENTS rviz)
 catkin_package()
 include_directories(${catkin_INCLUDE_DIRS})
@@ -21,12 +21,14 @@ add_definitions(-DQT_NO_KEYWORDS)
 ## Qt's meta-object compiler.
 qt4_wrap_cpp(MOC_FILES
   src/thick_path_display.h
+  src/plant_flag_tool.h
 )
 
 ## Here we specify the list of source files, including the output of
 ## the previous command which is stored in ``${MOC_FILES}``.
 set(SOURCE_FILES
   src/thick_path_display.cpp
+  src/plant_flag_tool.cpp
   ${MOC_FILES}
 )
 

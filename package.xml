@@ -1,5 +1,5 @@
 <package>
-  <name>rviz_plugins_dm</name>
+  <name>rviz_plugins_larics</name>
   <version>0.8.4</version>
   <description>
      Additional visualization plugins for RViz.
@@ -7,7 +7,7 @@
   <maintainer email="damjan.miklic@fer.hr">Damjan Miklic</maintainer>
   <license>BSD</license>
 
-  <url>http://ros.org/wiki/rviz_plugins_dm</url>
+  <url>http://ros.org/wiki/rviz_plugins_larics</url>
   <author>Damjan Miklic</author>
 
   <buildtool_depend>catkin</buildtool_depend>
