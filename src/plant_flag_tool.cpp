@@ -39,6 +39,8 @@
 #include <rviz/geometry.h>
 #include <rviz/properties/vector_property.h>
 
+#include "ros/ros.h"
+
 #include "plant_flag_tool.h"
 
 namespace rviz_plugin_tutorials
@@ -97,6 +99,7 @@ void PlantFlagTool::onInitialize()
   Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
   moving_flag_node_->attachObject( entity );
   moving_flag_node_->setVisible( false );
+
 }
 
 // Activation and deactivation
@@ -183,6 +186,18 @@ int PlantFlagTool::processMouseEvent( rviz::ViewportMouseEvent& event )
       current_flag_property_ = NULL; // Drop the reference so that deactivate() won't remove it.
       return Render | Finished;
     }
+    //Start the ROS node that will publish SERVICE
+    ros::NodeHandle n;
+    ros::ServiceClient client = n.serviceClient<std_srvs::Empty>("/get_path");
+    mav_path_trajectory::GetPath srv;
+    geometry_msgs::Point start,goal;
+    goal.x = intersection.x;
+    goal.y = intersection.y;
+    goal.z = 0.65;
+    start.x = 0.0; start.y = 0.0; start.z = 0.0;
+    srv.request.start = start;
+    srv.request.end = goal;
+    client.call(srv);
   }
   else
   {

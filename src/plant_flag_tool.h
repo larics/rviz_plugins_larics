@@ -30,6 +30,9 @@
 #define PLANT_FLAG_TOOL_H
 
 #include <rviz/tool.h>
+#include <std_srvs/Empty.h>
+#include <mav_path_trajectory/GetPath.h>
+#include <geometry_msgs/Point.h>
 
 namespace Ogre
 {
