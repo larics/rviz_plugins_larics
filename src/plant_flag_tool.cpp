@@ -99,6 +99,8 @@ void PlantFlagTool::onInitialize()
   Ogre::Entity* entity = scene_manager_->createEntity( flag_resource_ );
   moving_flag_node_->attachObject( entity );
   moving_flag_node_->setVisible( false );
+  
+  flag_counter = 0;
 
 }
 
@@ -184,20 +186,32 @@ int PlantFlagTool::processMouseEvent( rviz::ViewportMouseEvent& event )
     {
       makeFlag( intersection );
       current_flag_property_ = NULL; // Drop the reference so that deactivate() won't remove it.
+      flag_counter++;
+      switch (flag_counter)
+      {
+	case 1: 
+	  start.pose.position.x = intersection.x;
+	  start.pose.position.y = intersection.y;
+	  break;
+	case 2:
+	  goal.pose.position.x = intersection.x;
+	  goal.pose.position.y = intersection.y;
+	  flag_counter=0;
+	  //Start the ROS node that will publish SERVICE
+	  ros::NodeHandle n;
+	  ros::ServiceClient client = n.serviceClient<agv_control::GetMyPath>("GetMyPath");
+	  agv_control::GetMyPath srv;
+
+	  srv.request.start = start;
+	  srv.request.goal = goal;
+	  //ros::ServiceClient client = n.serviceClient<std_srvs::Empty>("SaveOctomap");
+	  //std_srvs::Empty srv;
+	  ROS_INFO("Planning from %f %f to %f %f",start.pose.position.x,start.pose.position.y,goal.pose.position.x,goal.pose.position.y);
+	  client.call(srv);
+	  break;
+      }
       return Render | Finished;
-    }
-    //Start the ROS node that will publish SERVICE
-    ros::NodeHandle n;
-    ros::ServiceClient client = n.serviceClient<std_srvs::Empty>("/get_path");
-    mav_path_trajectory::GetPath srv;
-    geometry_msgs::Point start,goal;
-    goal.x = intersection.x;
-    goal.y = intersection.y;
-    goal.z = 0.65;
-    start.x = 0.0; start.y = 0.0; start.z = 0.0;
-    srv.request.start = start;
-    srv.request.end = goal;
-    client.call(srv);
+    } 
   }
   else
   {

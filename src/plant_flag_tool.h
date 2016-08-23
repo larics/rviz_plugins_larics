@@ -32,7 +32,9 @@
 #include <rviz/tool.h>
 #include <std_srvs/Empty.h>
 #include <mav_path_trajectory/GetPath.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <agv_control/GetMyPath.h>
+
 
 namespace Ogre
 {
@@ -73,9 +75,10 @@ public:
 
 private:
   void makeFlag( const Ogre::Vector3& position );
-
+  int flag_counter;
   std::vector<Ogre::SceneNode*> flag_nodes_;
   Ogre::SceneNode* moving_flag_node_;
+  geometry_msgs::PoseStamped start, goal;
   std::string flag_resource_;
   rviz::VectorProperty* current_flag_property_;
 };

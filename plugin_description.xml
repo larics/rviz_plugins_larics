@@ -11,7 +11,8 @@
          type="rviz_plugin_tutorials::PlantFlagTool"
          base_class_type="rviz::Tool">
     <description>
-      Plant Flag Tool
+     Planting flag for path planning purposes
+    
     </description>
   </class>
 </library>
