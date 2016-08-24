@@ -192,14 +192,18 @@ int PlantFlagTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 	case 1: 
 	  start.pose.position.x = intersection.x;
 	  start.pose.position.y = intersection.y;
+    start.pose.orientation.w = 1;
+    start.header.frame_id = "map";
 	  break;
 	case 2:
 	  goal.pose.position.x = intersection.x;
 	  goal.pose.position.y = intersection.y;
+    goal.pose.orientation.w = 1;
+    goal.header.frame_id = "map";
 	  flag_counter=0;
 	  //Start the ROS node that will publish SERVICE
 	  ros::NodeHandle n;
-	  ros::ServiceClient client = n.serviceClient<agv_control::GetMyPath>("GetMyPath");
+	  ros::ServiceClient client = n.serviceClient<agv_control::GetMyPath>("alpha/planPath");
 	  agv_control::GetMyPath srv;
 
 	  srv.request.start = start;
