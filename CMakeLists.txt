@@ -22,6 +22,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 qt4_wrap_cpp(MOC_FILES
   src/thick_path_display.h
   src/plant_flag_tool.h
+  src/uav_flag_tool.h
 )
 
 ## Here we specify the list of source files, including the output of
@@ -29,6 +30,7 @@ qt4_wrap_cpp(MOC_FILES
 set(SOURCE_FILES
   src/thick_path_display.cpp
   src/plant_flag_tool.cpp
+  src/uav_flag_tool.cpp
   ${MOC_FILES}
 )
 
