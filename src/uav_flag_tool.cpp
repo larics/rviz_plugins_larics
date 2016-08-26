@@ -191,11 +191,13 @@ int UAVFlagTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 	case 1: 
 	  start.position.x = intersection.x;
 	  start.position.y = intersection.y;
+	  start.position.z = 0.7;
 	  start.orientation.w = 1;
 	  break;
 	case 2:
 	  goal.position.x = intersection.x;
 	  goal.position.y = intersection.y;
+	  goal.position.z = 0.7;
 	  goal.orientation.w = 1;
 	  flag_counter=0;
 	  //Start the ROS node that will publish SERVICE
