@@ -200,7 +200,7 @@ int UAVFlagTool::processMouseEvent( rviz::ViewportMouseEvent& event )
 	  flag_counter=0;
 	  //Start the ROS node that will publish SERVICE
 	  ros::NodeHandle n;
-	  ros::ServiceClient client = n.serviceClient<mav_path_trajectory::WaypointSrv>("/arducopter/positionWaypoint");
+	  ros::ServiceClient client = n.serviceClient<mav_path_trajectory::WaypointSrv>("/euroc3/positionWaypoint");
 	  mav_path_trajectory::WaypointSrv srv;
 
 	  srv.request.start = start;
